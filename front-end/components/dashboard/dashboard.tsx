@@ -52,7 +52,7 @@ export function Dashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            Bem-vindo de volta!
+            Bem-vindo de volta Luco!
           </h1>
           <p className="text-muted-foreground">Aqui está um resumo do que está acontecendo hoje.</p>
         </div>

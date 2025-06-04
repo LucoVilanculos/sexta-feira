@@ -1,6 +1,7 @@
 "use client"
 
 import { Brain, Calendar, Home, FolderOpen, Settings, User, LogOut } from "lucide-react"
+import Link from "next/link"
 import {
   Sidebar,
   SidebarContent,
@@ -15,7 +16,6 @@ import {
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import Link from "next/link"
 
 const menuItems = [
   {
@@ -35,7 +35,7 @@ const menuItems = [
   },
   {
     title: "Configurações",
-    url: "/dashboard/settings",
+    url: "/dashboard/configuration", // Corrigido aqui!
     icon: Settings,
   },
 ]

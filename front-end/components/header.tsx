@@ -6,6 +6,7 @@ import { Mic, MicOff, Volume2, VolumeX } from "lucide-react"
 import { useState } from "react"
 import { Badge } from "@/components/ui/badge"
 
+
 export function Header() {
   const [isListening, setIsListening] = useState(false)
   const [isSpeaking, setIsSpeaking] = useState(false)

@@ -1,13 +1,15 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
+import { Send, Brain } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Send, Mic, MicOff, Brain } from "lucide-react"
+import { VoiceButton } from "../ui/voicebutton"
+import { fetcAiResponse } from "@/lib/usechatai"
 
 interface Message {
   id: string
@@ -17,19 +19,27 @@ interface Message {
 }
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "Olá! Eu sou a Sexta-feira, sua assistente pessoal. Como posso ajudá-lo hoje?",
-      sender: "ai",
-      timestamp: new Date(),
-    },
-  ])
+  // 1. Inicialize vazio para evitar hydration error
+  const [messages, setMessages] = useState<Message[]>([])
   const [inputValue, setInputValue] = useState("")
-  const [isListening, setIsListening] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
+  // 2. Adicione a mensagem inicial só no client
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([
+        {
+          id: "1",
+          content: "Olá! Eu sou a Sexta-feira, sua assistente pessoal. Como posso ajudá-lo hoje?",
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ])
+    }
+  }, [])
+
+  // Scroll automático ao adicionar mensagens
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
@@ -37,52 +47,29 @@ export function ChatInterface() {
   }, [messages])
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: inputValue,
-      sender: "user",
-      timestamp: new Date(),
-    }
-
-    setMessages((prev) => [...prev, userMessage])
+    const userText = inputValue
     setInputValue("")
     setIsTyping(true)
 
-    // Simular resposta da IA
-    setTimeout(() => {
-      const aiResponse: Message = {
+    const aiText = await fetcAiResponse(userText)
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        content: userText,
+        sender: "user",
+        timestamp: new Date(),
+      },
+      {
         id: (Date.now() + 1).toString(),
-        content: generateAIResponse(inputValue),
+        content: aiText,
         sender: "ai",
         timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, aiResponse])
-      setIsTyping(false)
-    }, 1500)
-  }
+      },
+    ])
 
-  const generateAIResponse = (userInput: string): string => {
-    const input = userInput.toLowerCase()
-
-    if (input.includes("tarefa") || input.includes("task")) {
-      return "Entendi! Posso ajudá-lo a gerenciar suas tarefas. Você gostaria de criar uma nova tarefa, ver as pendentes ou marcar alguma como concluída?"
-    }
-
-    if (input.includes("reunião") || input.includes("meeting")) {
-      return "Claro! Posso agendar reuniões para você. Qual é o assunto da reunião e quando você gostaria de agendá-la?"
-    }
-
-    if (input.includes("projeto") || input.includes("project")) {
-      return "Vejo que você quer falar sobre projetos. Posso mostrar o status dos seus projetos atuais ou ajudar a criar um novo. O que prefere?"
-    }
-
-    if (input.includes("olá") || input.includes("oi") || input.includes("hello")) {
-      return "Olá! É um prazer falar com você. Estou aqui para tornar seu dia mais produtivo. Em que posso ajudar?"
-    }
-
-    return "Interessante! Estou processando sua solicitação. Como sua assistente pessoal, posso ajudar com tarefas, agendamentos, projetos e muito mais. Seja mais específico sobre o que precisa!"
+    setIsTyping(false)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -92,20 +79,16 @@ export function ChatInterface() {
     }
   }
 
-  const toggleListening = () => {
-    setIsListening(!isListening)
-    // Aqui você implementaria a funcionalidade de reconhecimento de voz
-  }
-
   return (
     <div className="flex flex-col h-96 border border-purple-500/20 rounded-lg bg-black/20">
       {/* Chat Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef} suppressHydrationWarning>
         <div className="space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
               className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+              suppressHydrationWarning
             >
               {message.sender === "ai" && (
                 <Avatar className="h-8 w-8 bg-gradient-to-br from-purple-500 to-blue-500">
@@ -121,6 +104,7 @@ export function ChatInterface() {
                     ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
                     : "bg-gray-700 text-gray-100"
                 }`}
+                suppressHydrationWarning
               >
                 <p className="text-sm">{message.content}</p>
                 <span className="text-xs opacity-70 mt-1 block">
@@ -140,7 +124,7 @@ export function ChatInterface() {
           ))}
 
           {isTyping && (
-            <div className="flex gap-3 justify-start">
+            <div className="flex gap-3 justify-start" suppressHydrationWarning>
               <Avatar className="h-8 w-8 bg-gradient-to-br from-purple-500 to-blue-500">
                 <AvatarFallback>
                   <Brain className="h-4 w-4 text-white" />
@@ -167,14 +151,8 @@ export function ChatInterface() {
       {/* Input Area */}
       <div className="border-t border-purple-500/20 p-4">
         <div className="flex gap-2">
-          <Button
-            variant={isListening ? "default" : "outline"}
-            size="sm"
-            onClick={toggleListening}
-            className={isListening ? "bg-red-600 hover:bg-red-700" : ""}
-          >
-            {isListening ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-          </Button>
+          {/* 3. VoiceButton envia texto para o input */}
+          <VoiceButton onResult={setInputValue} />
 
           <Input
             placeholder="Digite sua mensagem..."
@@ -182,12 +160,14 @@ export function ChatInterface() {
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1 border-purple-500/20 bg-black/40"
+            suppressHydrationWarning
           />
 
           <Button
             onClick={handleSendMessage}
             disabled={!inputValue.trim()}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+            suppressHydrationWarning
           >
             <Send className="h-4 w-4" />
           </Button>

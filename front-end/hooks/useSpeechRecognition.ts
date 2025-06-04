@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ISpeechRecognition extends EventTarget {
   lang: string;
@@ -13,6 +13,16 @@ interface ISpeechRecognition extends EventTarget {
   abort(): void;
 }
 
+type SpeechRecognitionEvent = Event & {
+  results: {
+    [index: number]: {
+      [index: number]: {
+        transcript: string;
+      }
+    };
+  }
+}
+
 type SpeechRecognition = ISpeechRecognition;
 
 declare global {
@@ -22,14 +32,17 @@ declare global {
   }
 }
 
-export const useSpeechRecognition = (onResult: (text: string) => void) => {
+// Não precisa mais do parâmetro onResult
+export const useSpeechRecognition = () => {
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [transcript, setTranscript] = useState<string>(""); // 1. Estado para guardar o texto
 
   useEffect(() => {
     const SpeechRecognition =
       window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+
     if (!SpeechRecognition) {
-      console.error("Speech Recognition API not supported in this browser.");
+      console.error("Seu navegador não suporta reconhecimento de voz.");
       return;
     }
 
@@ -38,9 +51,9 @@ export const useSpeechRecognition = (onResult: (text: string) => void) => {
     recognition.interimResults = false;
     recognition.continuous = false;
 
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      onResult(transcript);
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const result = event.results[0][0].transcript;
+      setTranscript(result); // 2. Atualiza o estado com o texto reconhecido
     };
 
     recognition.onerror = (event: any) => {
@@ -48,7 +61,7 @@ export const useSpeechRecognition = (onResult: (text: string) => void) => {
     };
 
     recognitionRef.current = recognition;
-  }, [onResult]);
+  }, []);
 
   const startListening = () => {
     if (recognitionRef.current) {
@@ -58,5 +71,6 @@ export const useSpeechRecognition = (onResult: (text: string) => void) => {
     }
   };
 
-  return { startListening };
+  // 3. Retorna o texto reconhecido e a função de iniciar
+  return { transcript, startListening };
 };
