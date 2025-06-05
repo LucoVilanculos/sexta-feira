@@ -3,12 +3,11 @@ import cors from "cors"
 import helmet from "helmet"
 import compression from "compression"
 import rateLimit from "express-rate-limit"
-import { errorHandler } from "@/middleware/errorHandler"
-import { notFoundHandler } from "@/middleware/notFoundHandler"
-import { authRouter } from "@/routes/auth.routes"
-import { calendarRouter } from "@/routes/calendar.routes"
-import { dashboardRouter } from "@/routes/dashboard.routes"
-import { userRouter } from "@/routes/user.routes"
+import { errorHandler } from "../middleware/errorHandler"
+import { notFoundHandler } from "../middleware/notFoundHandler"
+import { authRouter } from "../routes/auth.routes"
+import { taskRouter } from "../routes/task.routes"
+import { eventRouter } from "../routes/event.routes"
 
 export function createApp() {
   const app = express()
@@ -34,9 +33,8 @@ export function createApp() {
 
   // API Routes
   app.use("/api/auth", authRouter)
-  app.use("/api/calendar", calendarRouter)
-  app.use("/api/dashboard", dashboardRouter)
-  app.use("/api/users", userRouter)
+  app.use("/api/tasks", taskRouter)
+  app.use("/api/events", eventRouter)
 
   // Error handling
   app.use(notFoundHandler)

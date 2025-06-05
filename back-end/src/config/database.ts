@@ -1,14 +1,7 @@
-import mongoose from "mongoose"
-import { config } from "./env"
+import { PrismaClient } from '@prisma/client'
 
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(config.MONGODB_URI)
-    console.log(`MongoDB Connected: ${conn.connection.host}`)
-  } catch (error) {
-    console.error(`Error: ${error.message}`)
-    process.exit(1)
-  }
-}
+const prisma = new PrismaClient({
+  log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+})
 
-export default connectDB 
+export default prisma 

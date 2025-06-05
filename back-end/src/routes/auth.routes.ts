@@ -1,14 +1,12 @@
-import { Router } from "express"
-import { AuthController } from "@/controllers/AuthController"
-import { validateRequest } from "@/middleware/validateRequest"
-import { loginSchema, registerSchema } from "@/schemas/auth.schema"
+import { Router } from 'express'
+import { AuthController } from '../controllers/auth.controller'
+import { authMiddleware } from '../middleware/authMiddleware'
+import { validateRequest } from '../middleware/validateRequest'
+import { loginSchema, registerSchema } from '../schemas/auth.schema'
 
-const router = Router()
-const authController = new AuthController()
+export const authRouter = Router()
 
-router.post("/register", validateRequest(registerSchema), authController.register)
-router.post("/login", validateRequest(loginSchema), authController.login)
-router.post("/refresh-token", authController.refreshToken)
-router.post("/logout", authController.logout)
-
-export const authRouter = router 
+authRouter.post('/register', validateRequest(registerSchema), AuthController.register)
+authRouter.post('/login', validateRequest(loginSchema), AuthController.login)
+authRouter.get('/me', authMiddleware, AuthController.me)
+authRouter.post('/logout', authMiddleware, AuthController.logout) 

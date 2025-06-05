@@ -1,47 +1,58 @@
 import { Request, Response, NextFunction } from "express"
 import { ZodError } from "zod"
 import { AppError } from "@/utils/AppError"
+import { Prisma } from '@prisma/client'
 
 export function errorHandler(
-  err: Error,
+  error: Error,
   req: Request,
   res: Response,
   next: NextFunction
 ) {
   // Log error
-  console.error(err)
+  console.error(error)
 
   // Handle Zod validation errors
-  if (err instanceof ZodError) {
+  if (error instanceof ZodError) {
     return res.status(400).json({
       status: "error",
       message: "Validation error",
-      errors: err.errors
+      errors: error.errors
     })
   }
 
   // Handle custom application errors
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({
+  if (error instanceof AppError) {
+    return res.status(error.statusCode).json({
       status: "error",
-      message: err.message,
-      code: err.code
+      message: error.message,
+      code: error.code
     })
   }
 
   // Handle JWT errors
-  if (err.name === "JsonWebTokenError") {
+  if (error.name === "JsonWebTokenError") {
     return res.status(401).json({
       status: "error",
       message: "Invalid token"
     })
   }
 
-  if (err.name === "TokenExpiredError") {
+  if (error.name === "TokenExpiredError") {
     return res.status(401).json({
       status: "error",
       message: "Token expired"
     })
+  }
+
+  // Handle Prisma errors
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({
+        status: 'error',
+        message: 'Registro já existe'
+      })
+    }
   }
 
   // Handle unknown errors
