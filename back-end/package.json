@@ -4,7 +4,7 @@
   "description": "Backend for Sexta-Feira application",
   "main": "src/server.ts",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only --ignore-watch node_modules src/server.ts",
+    "dev": "ts-node-dev -r ./tsconfig-paths-bootstrap.js --respawn --transpile-only --ignore-watch node_modules src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "prisma:generate": "prisma generate",

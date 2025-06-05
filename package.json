@@ -1,7 +1,0 @@
-{
-  "dependencies": {
-    "compression": "^1.8.0",
-    "mongose": "^0.0.2-security",
-    "prisma": "^6.9.0"
-  }
-}
