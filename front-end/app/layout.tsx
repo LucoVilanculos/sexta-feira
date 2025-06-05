@@ -1,16 +1,12 @@
-import type React from "react"
-import type { Metadata } from "next"
+import "@/styles/globals.css"
 import { Inter } from "next/font/google"
-import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { Toaster } from "@/components/ui/toaster"
+import { Providers } from "@/providers"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata: Metadata = {
-  title: "Sexta-feira - IA Assistente Pessoal",
-  description: "Sua assistente pessoal inteligente para gerenciar tarefas, reuniões e muito mais",
-    generator: 'v0.dev'
+export const metadata = {
+  title: "Sexta-Feira - Seu Assistente Virtual",
+  description: "Assistente virtual inteligente para ajudar no seu dia a dia",
 }
 
 export default function RootLayout({
@@ -21,10 +17,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )

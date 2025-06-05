@@ -10,6 +10,9 @@ import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { authApi } from "@/server/auth"
+import { LoginData } from "@/types/auth"
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -22,6 +25,7 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const router = useRouter()
 
   const {
     register,
@@ -35,23 +39,22 @@ export function LoginForm() {
     setIsLoading(true)
 
     try {
-      // Aqui você faria a chamada para sua API de login
-      console.log("Login data:", data)
+      const response = await authApi.login(data.email, data.password)
 
-      // Simular delay da API
-      await new Promise((resolve) => setTimeout(resolve, 2000))
+      // Armazenar o token no localStorage
+      localStorage.setItem("token", response.token)
 
       toast({
         title: "Login realizado com sucesso!",
-        description: "Redirecionando para o dashboard...",
+        description: "Bem-vindo de volta! Redirecionando...",
       })
 
-      // Redirecionar para dashboard
-      // router.push("/dashboard")
+      // Redirecionar para o dashboard após login bem-sucedido
+      router.push("/dashboard")
     } catch (error) {
       toast({
         title: "Erro no login",
-        description: "Verifique suas credenciais e tente novamente.",
+        description: error instanceof Error ? error.message : "Credenciais inválidas. Tente novamente.",
         variant: "destructive",
       })
     } finally {

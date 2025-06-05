@@ -1,56 +1,101 @@
 'use client'
 import { useEffect, useState, useRef } from 'react'
+import { Mic, MicOff } from 'lucide-react'
+import { toast } from 'sonner'
+import { Button } from './button'
+import { useVoice } from '../context/voiceContext'
 
 interface VoiceButtonProps {
   onResult?: (text: string) => void
+  className?: string
 }
 
-export const VoiceButton = ({ onResult }: VoiceButtonProps) => {
+export const VoiceButton = ({ onResult, className }: VoiceButtonProps) => {
   const [isSupported, setIsSupported] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const recognitionRef = useRef<any>(null)
+  const { settings } = useVoice()
 
   useEffect(() => {
-    setMounted(true)
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
       if (SpeechRecognition) {
-        setIsSupported(true)
-        recognitionRef.current = new SpeechRecognition()
-        recognitionRef.current.lang = 'pt-PT'
-        recognitionRef.current.onend = () => setIsListening(false)
-      } else {
-        console.error("Reconhecimento de voz não suportado.")
+        try {
+          setIsSupported(true)
+          recognitionRef.current = new SpeechRecognition()
+          recognitionRef.current.lang = settings.language
+          recognitionRef.current.continuous = false
+          recognitionRef.current.interimResults = false
+
+          // Event handlers
+          recognitionRef.current.onend = () => {
+            setIsListening(false)
+          }
+
+          recognitionRef.current.onerror = (event: any) => {
+            setIsListening(false)
+            setError(event.error)
+            toast.error(`Error: ${event.error}`)
+          }
+
+          recognitionRef.current.onnomatch = () => {
+            setIsListening(false)
+            toast.error("Couldn't recognize speech")
+          }
+
+        } catch (err) {
+          console.error("Error initializing speech recognition:", err)
+          setIsSupported(false)
+        }
       }
     }
-  }, [])
+  }, [settings.language])
 
-  const handleClick = () => {
-    if (recognitionRef.current && !isListening) {
+  const handleClick = async () => {
+    if (!recognitionRef.current || isListening) return
+
+    try {
+      setError(null)
       setIsListening(true)
+
       recognitionRef.current.start()
       recognitionRef.current.onresult = (event: any) => {
         const text = event.results[0][0].transcript
-        if (onResult) onResult(text)
-        recognitionRef.current.stop() // Para o reconhecimento após resultado
+        if (onResult) {
+          onResult(text)
+          toast.success("Speech recognized!")
+        }
+        recognitionRef.current.stop()
       }
+    } catch (err) {
+      console.error("Error starting speech recognition:", err)
+      setIsListening(false)
+      toast.error("Failed to start speech recognition")
     }
   }
 
-  if (!mounted) return null
-
   if (!isSupported) {
-    return <p className="text-red-500 text-sm">Reconhecimento de voz não suportado.</p>
+    return null
   }
 
   return (
-    <button
-      className={`px-4 py-2 rounded ${isListening ? "bg-gray-400" : "bg-blue-500 text-white"}`}
+    <Button
+      variant="ghost"
+      size="icon"
       onClick={handleClick}
-      disabled={isListening}
+      disabled={isListening || !!error}
+      className={`relative ${className || ''}`}
+      title={error || (isListening ? "Listening..." : "Click to speak")}
     >
-      🎤 {isListening ? "Ouvindo..." : "Falar"}
-    </button>
+      {isListening ? (
+        <>
+          <Mic className="h-4 w-4 text-primary animate-pulse" />
+          <span className="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full" />
+        </>
+      ) : (
+        <MicOff className="h-4 w-4 text-muted-foreground" />
+      )}
+    </Button>
   )
 }

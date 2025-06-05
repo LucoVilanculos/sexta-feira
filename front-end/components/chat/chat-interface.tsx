@@ -1,75 +1,41 @@
 "use client"
 
-import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { Send, Brain } from "lucide-react"
+import { Send, Brain, Trash2, ArrowDown } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { VoiceButton } from "../ui/voicebutton"
-import { fetcAiResponse } from "@/lib/usechatai"
-
-interface Message {
-  id: string
-  content: string
-  sender: "user" | "ai"
-  timestamp: Date
-}
+import { useChat } from "@/hooks/useChat"
 
 export function ChatInterface() {
-  // 1. Inicialize vazio para evitar hydration error
-  const [messages, setMessages] = useState<Message[]>([])
+  const { messages, isLoading, isFetchingHistory, sendMessage, clearHistory } = useChat()
   const [inputValue, setInputValue] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
+  const [showScrollButton, setShowScrollButton] = useState(false)
   const scrollAreaRef = useRef<HTMLDivElement>(null)
 
-  // 2. Adicione a mensagem inicial só no client
-  useEffect(() => {
-    if (messages.length === 0) {
-      setMessages([
-        {
-          id: "1",
-          content: "Olá! Eu sou a Sexta-feira, sua assistente pessoal. Como posso ajudá-lo hoje?",
-          sender: "ai",
-          timestamp: new Date(),
-        },
-      ])
-    }
-  }, [])
+  // Handle scroll to show/hide scroll button
+  const handleScroll = () => {
+    if (!scrollAreaRef.current) return
+    
+    const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100
+    setShowScrollButton(!isNearBottom)
+  }
 
-  // Scroll automático ao adicionar mensagens
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollAreaRef.current) {
+    if (scrollAreaRef.current && !showScrollButton) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
     }
-  }, [messages])
+  }, [messages, showScrollButton])
 
   const handleSendMessage = async () => {
-    const userText = inputValue
+    if (!inputValue.trim()) return
     setInputValue("")
-    setIsTyping(true)
-
-    const aiText = await fetcAiResponse(userText)
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        content: userText,
-        sender: "user",
-        timestamp: new Date(),
-      },
-      {
-        id: (Date.now() + 1).toString(),
-        content: aiText,
-        sender: "ai",
-        timestamp: new Date(),
-      },
-    ])
-
-    setIsTyping(false)
+    await sendMessage(inputValue)
   }
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -79,16 +45,46 @@ export function ChatInterface() {
     }
   }
 
+  const scrollToBottom = () => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
+      setShowScrollButton(false)
+    }
+  }
+
+  if (isFetchingHistory) {
+    return (
+      <div className="flex h-96 items-center justify-center border border-purple-500/20 rounded-lg bg-black/20">
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500" />
+          <p className="text-sm text-muted-foreground">Loading chat history...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col h-96 border border-purple-500/20 rounded-lg bg-black/20">
+      {/* Header with clear button */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-purple-500/20">
+        <h3 className="text-sm font-medium">Chat History</h3>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={clearHistory}
+          className="h-8 w-8 text-muted-foreground hover:text-foreground"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+
       {/* Chat Messages */}
-      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef} suppressHydrationWarning>
+      <ScrollArea className="flex-1 p-4" ref={scrollAreaRef} onScroll={handleScroll}>
         <div className="space-y-4">
           {messages.map((message) => (
             <div
               key={message.id}
               className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
-              suppressHydrationWarning
             >
               {message.sender === "ai" && (
                 <Avatar className="h-8 w-8 bg-gradient-to-br from-purple-500 to-blue-500">
@@ -104,14 +100,10 @@ export function ChatInterface() {
                     ? "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
                     : "bg-gray-700 text-gray-100"
                 }`}
-                suppressHydrationWarning
               >
-                <p className="text-sm">{message.content}</p>
+                <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
                 <span className="text-xs opacity-70 mt-1 block">
-                  {message.timestamp.toLocaleTimeString("pt-BR", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {new Date(message.timestamp).toLocaleTimeString()}
                 </span>
               </div>
 
@@ -122,54 +114,45 @@ export function ChatInterface() {
               )}
             </div>
           ))}
-
-          {isTyping && (
-            <div className="flex gap-3 justify-start" suppressHydrationWarning>
-              <Avatar className="h-8 w-8 bg-gradient-to-br from-purple-500 to-blue-500">
-                <AvatarFallback>
-                  <Brain className="h-4 w-4 text-white" />
-                </AvatarFallback>
-              </Avatar>
-              <div className="bg-gray-700 rounded-lg p-3">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.1s" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-                    style={{ animationDelay: "0.2s" }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </ScrollArea>
+
+      {/* Scroll to bottom button */}
+      {showScrollButton && (
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={scrollToBottom}
+          className="absolute bottom-20 right-6 h-8 w-8 rounded-full bg-primary/90 hover:bg-primary shadow-lg"
+        >
+          <ArrowDown className="h-4 w-4" />
+        </Button>
+      )}
 
       {/* Input Area */}
       <div className="border-t border-purple-500/20 p-4">
         <div className="flex gap-2">
-          {/* 3. VoiceButton envia texto para o input */}
           <VoiceButton onResult={setInputValue} />
 
           <Input
-            placeholder="Digite sua mensagem..."
+            placeholder="Type your message..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             className="flex-1 border-purple-500/20 bg-black/40"
-            suppressHydrationWarning
+            disabled={isLoading}
           />
 
           <Button
             onClick={handleSendMessage}
-            disabled={!inputValue.trim()}
+            disabled={!inputValue.trim() || isLoading}
             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-            suppressHydrationWarning
           >
-            <Send className="h-4 w-4" />
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
           </Button>
         </div>
       </div>
