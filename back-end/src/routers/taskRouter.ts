@@ -8,13 +8,16 @@ const router = Router()
 // Validações
 const validateTask = [
   body("title").trim().isLength({ min: 1 }).withMessage("Título é obrigatório"),
-  body("priority").isIn(["baixa", "média", "alta"]).withMessage("Prioridade inválida"),
+  body("priority").isIn(["Baixa", "Média", "Alta"]).withMessage("Prioridade inválida"),
 ]
 
 const validateTaskUpdate = [
   body("title").optional().trim().isLength({ min: 1 }).withMessage("Título é obrigatório"),
-  body("priority").optional().isIn(["baixa", "média", "alta"]).withMessage("Prioridade inválida"),
-  body("status").optional().isIn(["pending", "in_progress", "completed", "cancelled"]).withMessage("Status inválido"),
+  body("priority").optional().isIn(["Baixa", "Média", "Alta"]).withMessage("Prioridade inválida"),
+  body("status")
+    .optional()
+    .isIn(["Pendente", "Em Andamento", "Concluída", "Cancelada"])
+    .withMessage("Status inválido"),
 ]
 
 // Todas as rotas requerem autenticação

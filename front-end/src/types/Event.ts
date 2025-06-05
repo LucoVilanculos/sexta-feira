@@ -26,3 +26,4 @@ export interface Event {
   }[]
   metadata?: Record<string, unknown>
 }
+ 
