@@ -22,7 +22,7 @@ export class AuthService {
       const decoded = verify(token, this.JWT_SECRET) as { userId: string }
       return decoded
     } catch (error) {
-      throw new AppError('Invalid token', 401)
+      throw new AppError('Token inválido', 401)
     }
   }
 
@@ -36,7 +36,7 @@ export class AuthService {
     })
 
     if (existingUser) {
-      throw new AppError('Email already registered', 400)
+      throw new AppError('Email já existe', 400)
     }
 
     const hashedPassword = await hash(data.password, 10)
@@ -58,7 +58,7 @@ export class AuthService {
 
     return {
       user,
-      message: 'Registration successful! Please login to continue.'
+      message: 'Registado com sucesso! Por favor faça o login para continuar.'
     }
   }
 
@@ -68,13 +68,13 @@ export class AuthService {
     })
 
     if (!user) {
-      throw new AppError('Invalid credentials', 401)
+      throw new AppError('Credênciais inválidas', 401)
     }
 
     const isValidPassword = await compare(password, user.password)
 
     if (!isValidPassword) {
-      throw new AppError('Invalid credentials', 401)
+      throw new AppError('Credênciais inválidas', 401)
     }
 
     const token = await this.createToken(user.id)
@@ -86,7 +86,7 @@ export class AuthService {
         name: user.name,
       },
       token,
-      message: 'Login successful! Welcome back.'
+      message: 'Login com sucesso! Bem vindo de volta.'
     }
   }
 
@@ -94,7 +94,7 @@ export class AuthService {
     // No futuro, podemos adicionar uma lista negra de tokens ou
     // implementar refresh tokens para maior segurança
     return {
-      message: 'Logout successful. See you soon!'
+      message: 'Logout com sucesso! te vejo em breve'
     }
   }
 } 
