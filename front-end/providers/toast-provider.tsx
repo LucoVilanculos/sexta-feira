@@ -1,3 +1,5 @@
+"use client"
+
 import { Toaster } from "sonner"
 import { useTheme } from "next-themes"
 
