@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { authApi } from "@/server/auth"
+import { authApi } from "@/services/auth"
 
 const registerSchema = z
   .object({

@@ -1,24 +1,10 @@
 import { Router } from "express"
-import { body } from "express-validator"
 import { TaskController } from "../controllers/TaskController"
 import { authenticateToken } from "../middleware/auth"
+import { taskSchema } from "../schemas/validation"
+import { validateRequest } from "../schemas/validation"
 
 const router = Router()
-
-// Validações
-const validateTask = [
-  body("title").trim().isLength({ min: 1 }).withMessage("Título é obrigatório"),
-  body("priority").isIn(["Baixa", "Média", "Alta"]).withMessage("Prioridade inválida"),
-]
-
-const validateTaskUpdate = [
-  body("title").optional().trim().isLength({ min: 1 }).withMessage("Título é obrigatório"),
-  body("priority").optional().isIn(["Baixa", "Média", "Alta"]).withMessage("Prioridade inválida"),
-  body("status")
-    .optional()
-    .isIn(["Pendente", "Em Andamento", "Concluída", "Cancelada"])
-    .withMessage("Status inválido"),
-]
 
 // Todas as rotas requerem autenticação
 router.use(authenticateToken)
@@ -27,8 +13,8 @@ router.use(authenticateToken)
 router.get("/", TaskController.getTasks)
 router.get("/stats", TaskController.getTaskStats)
 router.get("/:id", TaskController.getTask)
-router.post("/", validateTask, TaskController.createTask)
-router.put("/:id", validateTaskUpdate, TaskController.updateTask)
+router.post("/", validateRequest(taskSchema), TaskController.createTask)
+router.put("/:id", validateRequest(taskSchema.partial()), TaskController.updateTask)
 router.delete("/:id", TaskController.deleteTask)
 router.patch("/:id/complete", TaskController.completeTask)
 

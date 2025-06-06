@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
-import { ChatApi } from '@/server/chat'
+import { ChatApi } from '@/services/chat'
 import type { Message } from '@/types/chat'
 
 export function useChat() {

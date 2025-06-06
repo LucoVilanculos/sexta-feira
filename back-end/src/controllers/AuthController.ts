@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { AppError } from "@/utils/AppError"
-import { AuthService } from "@/services/AuthService"
+import { AuthService } from "@/server/AuthService"
 import { LoginInput, RegisterInput } from "@/schemas/auth.schema"
 
 export class AuthController {

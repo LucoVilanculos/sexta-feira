@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express"
-import { TokenService } from "@/services/TokenService"
+import { TokenService } from "@/server/TokenService"
 import { AppError } from "@/utils/AppError"
 
 const tokenService = new TokenService()

@@ -1,7 +1,9 @@
-import { compare, hash } from 'bcryptjs'
-import { sign, verify } from 'jsonwebtoken'
+import { Request } from 'express'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
 import prisma from '../config/database'
 import { AppError } from '../utils/AppError'
+import { LoginInput, RegisterInput } from '../schemas/auth.schema'
 import crypto from 'crypto'
 import nodemailer from 'nodemailer'
 
@@ -10,86 +12,119 @@ export class AuthService {
   private static JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d'
   private static RESET_TOKEN_EXPIRES = 3600000 // 1 hour in milliseconds
 
-  static async createToken(userId: string): Promise<string> {
-    // @ts-ignore
-    return sign(
-      { userId },
-      this.JWT_SECRET,
-      { expiresIn: this.JWT_EXPIRES_IN }
-    )
-  }
-
-  static async verifyToken(token: string) {
-    try {
-      // @ts-ignore
-      const decoded = verify(token, this.JWT_SECRET) as { userId: string }
-      return decoded
-    } catch (error) {
-      throw new AppError('Token inválido', 401)
-    }
-  }
-
-  static async register(data: { 
-    email: string
-    password: string
-    name: string 
-  }) {
+  static async register(data: RegisterInput) {
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email }
     })
 
     if (existingUser) {
-      throw new AppError('Email já existe', 400)
+      throw new AppError('Email já está em uso', 400)
     }
 
-    const hashedPassword = await hash(data.password, 10)
+    const hashedPassword = await bcrypt.hash(data.password, 10)
 
     const user = await prisma.user.create({
       data: {
         ...data,
-        password: hashedPassword,
+        password: hashedPassword
       },
       select: {
         id: true,
-        email: true,
         name: true,
-        createdAt: true,
+        email: true
       }
     })
 
-    const token = await this.createToken(user.id)
+    const token = AuthService.generateToken(user.id)
 
-    return {
-      user,
-      message: 'Registado com sucesso! Por favor faça o login para continuar.'
-    }
+    return { user, token }
   }
 
-  static async login(email: string, password: string) {
+  static async login(data: LoginInput) {
     const user = await prisma.user.findUnique({
-      where: { email }
+      where: { email: data.email }
     })
 
     if (!user) {
-      throw new AppError('Credênciais inválidas', 401)
+      throw new AppError('Email ou senha inválidos', 401)
     }
 
-    const isValidPassword = await compare(password, user.password)
+    const validPassword = await bcrypt.compare(data.password, user.password)
 
-    if (!isValidPassword) {
-      throw new AppError('Credênciais inválidas', 401)
+    if (!validPassword) {
+      throw new AppError('Email ou senha inválidos', 401)
     }
 
-    const token = await this.createToken(user.id)
+    const token = AuthService.generateToken(user.id)
 
     return {
       user: {
         id: user.id,
-        email: user.email,
         name: user.name,
+        email: user.email
       },
-      token,
-      message: 'Login com sucesso! Bem vindo de volta.'
+      token
+    }
+  }
+
+  static generateToken(userId: string): string {
+    if (!AuthService.JWT_SECRET) {
+      throw new AppError('JWT_SECRET não está configurado', 500)
+    }
+
+    return jwt.sign({ userId }, AuthService.JWT_SECRET as jwt.Secret, { expiresIn: AuthService.JWT_EXPIRES_IN }) as string
+  }
+
+  static async verifyToken(token: string) {
+    try {
+      if (!AuthService.JWT_SECRET) {
+        throw new AppError('JWT_SECRET não está configurado', 500)
+      }
+
+      const decoded = jwt.verify(token, AuthService.JWT_SECRET as jwt.Secret) as { userId: string }
+      return decoded
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new AppError('Token inválido', 401)
+      }
+      throw new AppError('Erro ao validar token', 401)
+    }
+  }
+
+  static async validateToken(token: string) {
+    return this.verifyToken(token)
+  }
+
+  static async getUserFromRequest(req: Request) {
+    const authHeader = req.headers.authorization
+
+    if (!authHeader) {
+      throw new AppError('Token não fornecido', 401)
+    }
+
+    const [, token] = authHeader.split(' ')
+
+    try {
+      const decoded = await AuthService.validateToken(token)
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.userId },
+        select: {
+          id: true,
+          name: true,
+          email: true
+        }
+      })
+
+      if (!user) {
+        throw new AppError('Usuário não encontrado', 404)
+      }
+
+      return user
+    } catch (error) {
+      if (error instanceof AppError) {
+        throw error
+      }
+      throw new AppError('Erro ao validar token', 401)
     }
   }
 
@@ -115,7 +150,7 @@ export class AuthService {
     const resetTokenExpiry = new Date(Date.now() + this.RESET_TOKEN_EXPIRES)
     
     // Hash the reset token before storing
-    const hashedResetToken = await hash(resetToken, 10)
+    const hashedResetToken = await bcrypt.hash(resetToken, 10)
 
     // Update user with reset token
     await prisma.user.update({
@@ -170,13 +205,13 @@ export class AuthService {
     }
 
     // Verify reset token
-    const isValidToken = await compare(resetToken, user.resetToken!)
+    const isValidToken = await bcrypt.compare(resetToken, user.resetToken!)
     if (!isValidToken) {
       throw new AppError('Token inválido', 400)
     }
 
     // Hash new password and update user
-    const hashedPassword = await hash(newPassword, 10)
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
     
     await prisma.user.update({
       where: { id: user.id },
@@ -202,13 +237,13 @@ export class AuthService {
     }
 
     // Verify current password
-    const isValidPassword = await compare(currentPassword, user.password)
+    const isValidPassword = await bcrypt.compare(currentPassword, user.password)
     if (!isValidPassword) {
       throw new AppError('Senha atual incorreta', 401)
     }
 
     // Hash and update new password
-    const hashedPassword = await hash(newPassword, 10)
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
     
     await prisma.user.update({
       where: { id: user.id },

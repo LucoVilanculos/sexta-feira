@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useCallback } from "react"
 import { useVoice } from "./voiceContext"
 import { Message } from "@/types/chat"
-import { sendChatMessage } from "@/server/chat"
+import { sendChatMessage } from "@/services/chat"
 import { processNaturalLanguage } from "@/utils/commandProcessor"
 import { toast } from "sonner"
 

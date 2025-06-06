@@ -1,5 +1,4 @@
 import type { Request, Response } from "express"
-import { validationResult } from "express-validator"
 import { TaskModel, type CreateTaskData, type UpdateTaskData, type TaskFilters } from "../models/Task"
 
 export class TaskController {
@@ -56,12 +55,6 @@ export class TaskController {
 
   static async createTask(req: Request, res: Response): Promise<void> {
     try {
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() })
-        return
-      }
-
       const userId = (req as any).user?.userId
       if (!userId) {
         res.status(401).json({ message: "Token inválido" })
@@ -83,12 +76,6 @@ export class TaskController {
 
   static async updateTask(req: Request, res: Response): Promise<void> {
     try {
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() })
-        return
-      }
-
       const userId = (req as any).user?.userId
       const { id } = req.params
 

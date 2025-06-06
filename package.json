@@ -1,5 +1,1 @@
-{
-  "dependencies": {
-    "express-validator": "^7.2.1"
-  }
-}
+{ name: sexta-feira-frontend, version: 0.1.0, private: true }

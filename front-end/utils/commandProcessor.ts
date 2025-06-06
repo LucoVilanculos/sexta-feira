@@ -9,7 +9,7 @@ import {
   createUpdateCommand,
   createAnalysisCommand,
   executeCommand,
-} from "@/server/commands"
+} from "@/services/commands"
 
 interface CommandPattern {
   type: string
