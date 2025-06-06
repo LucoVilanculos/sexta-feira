@@ -1,8 +1,8 @@
-import { Request, Response } from "express"
+import { Request, Response, NextFunction } from "express"
 
-export function notFoundHandler(req: Request, res: Response) {
+export function notFoundHandler(req: Request, res: Response, next: NextFunction) {
   res.status(404).json({
     status: "error",
-    message: `Cannot ${req.method} ${req.url}`
+    message: `Não foi possível ${req.method} ${req.url}`
   })
 } 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { DashboardService } from "@/services/DashboardService"
+import { DashboardService } from "@/server/DashboardService"
 import { UpdateWidgetInput } from "@/schemas/dashboard.schema"
 import { AppError } from "@/utils/AppError"
 

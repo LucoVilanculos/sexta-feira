@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { AuthService } from '../services/auth.service'
+import { AuthService } from '../server/auth.service'
 import { AppError } from '../utils/AppError'
 import prisma from '../config/database'
 

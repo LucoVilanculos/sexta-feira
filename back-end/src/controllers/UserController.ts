@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { UserService } from "@/services/UserService"
+import { UserService } from "@/server/UserService"
 import { UpdateProfileInput, UpdateSettingsInput } from "@/schemas/user.schema"
 import { AppError } from "@/utils/AppError"
 

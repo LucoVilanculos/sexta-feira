@@ -1,27 +1,67 @@
-import OpenAI from 'openai';
 import { NextRequest, NextResponse } from 'next/server';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
 
-console.log('API KEY:', process.env.OPENAI_API_KEY);
+// Usando um modelo público do HuggingFace
+const API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill";
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages } = await req.json();
+    const body = await req.json();
+    const messages = body.messages as Message[];
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo', // Troque para gpt-4 se sua chave permitir
-      stream: false,
-      messages,
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return NextResponse.json(
+        { error: "Formato de mensagem inválido." },
+        { status: 400 }
+      );
+    }
+
+    // Pegando a última mensagem do usuário
+    const lastMessage = messages[messages.length - 1].content;
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        inputs: lastMessage,
+        options: {
+          wait_for_model: true
+        }
+      }),
     });
 
-    console.log('OpenAI completion:', completion);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-    return NextResponse.json({ response: completion.choices?.[0]?.message?.content || "" });
+    const result = await response.json();
+    
+    // O modelo retorna um array com a resposta gerada
+    const aiResponse = Array.isArray(result) ? result[0].generated_text : result.generated_text;
+
+    if (!aiResponse) {
+      return NextResponse.json(
+        { error: "Resposta vazia do modelo." },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ 
+      response: aiResponse
+    });
+
   } catch (error) {
-    console.error("Erro na API OpenAI:", error);
-    return NextResponse.json({ response: "Erro ao consultar a IA." }, { status: 500 });
+    console.error("Erro na API:", error);
+    
+    return NextResponse.json(
+      { error: "Erro ao processar a mensagem." },
+      { status: 500 }
+    );
   }
 }

@@ -3,7 +3,7 @@ import { AuthController } from '../controllers/auth.controller'
 import { authMiddleware } from '../middleware/authMiddleware'
 import { validateRequest } from '../middleware/validateRequest'
 import { loginSchema, registerSchema } from '../schemas/auth.schema'
-import { AuthService } from '../services/auth.service'
+import { AuthService } from '../server/auth.service'
 
 export const authRouter = Router()
 

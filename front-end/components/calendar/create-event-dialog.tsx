@@ -17,7 +17,7 @@ import {
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
-import { calendarApi } from "@/server/calendar"
+import { calendarApi } from "@/services/calendar"
 import { CreateEventData } from "@/types/calendar"
 
 const createEventSchema = z.object({

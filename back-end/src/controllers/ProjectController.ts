@@ -1,5 +1,4 @@
-import type { Request, Response } from "express"
-import { validationResult } from "express-validator"
+import { Request, Response } from "express"
 import { ProjectModel, type CreateProjectData, type UpdateProjectData, type ProjectFilters } from "../models/Project"
 
 export class ProjectController {
@@ -55,19 +54,13 @@ export class ProjectController {
 
   static async createProject(req: Request, res: Response): Promise<void> {
     try {
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() })
-        return
-      }
-
       const userId = (req as any).user?.userId
       if (!userId) {
         res.status(401).json({ message: "Token inválido" })
         return
       }
 
-      const projectData: CreateProjectData = req.body
+      const projectData = req.body
       const project = await ProjectModel.create(userId, projectData)
 
       res.status(201).json({
@@ -82,12 +75,6 @@ export class ProjectController {
 
   static async updateProject(req: Request, res: Response): Promise<void> {
     try {
-      const errors = validationResult(req)
-      if (!errors.isEmpty()) {
-        res.status(400).json({ errors: errors.array() })
-        return
-      }
-
       const userId = (req as any).user?.userId
       const { id } = req.params
 
@@ -96,7 +83,7 @@ export class ProjectController {
         return
       }
 
-      const updateData: UpdateProjectData = req.body
+      const updateData = req.body
       const project = await ProjectModel.update(id, userId, updateData)
 
       if (!project) {

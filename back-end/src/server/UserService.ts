@@ -2,19 +2,71 @@ import { AppError } from "@/utils/AppError"
 import { UpdateProfileInput, UpdateSettingsInput } from "@/schemas/user.schema"
 import { UserModel } from "@/models/UserModel"
 import bcrypt from "bcryptjs"
+import prisma from "@/config/database"
 
 export class UserService {
   async getProfile(userId: string) {
-    const user = await UserModel.findById(userId)
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        bio: true,
+        timezone: true,
+        settings: true,
+        preferences: true,
+        createdAt: true
+      }
+    })
+
     if (!user) {
-      throw new AppError("User not found", 404)
+      throw new AppError("Usuário não encontrado", 404)
     }
+
     return user
   }
 
   async updateProfile(userId: string, data: UpdateProfileInput) {
-    const user = await this.getProfile(userId)
-    return UserModel.update(userId, data)
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404)
+    }
+
+    if (data.email && data.email !== user.email) {
+      const emailExists = await prisma.user.findUnique({
+        where: { email: data.email }
+      })
+
+      if (emailExists) {
+        throw new AppError("Email já está em uso", 400)
+      }
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: data.name,
+        email: data.email,
+        avatar: data.avatar,
+        bio: data.bio,
+        timezone: data.timezone
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatar: true,
+        bio: true,
+        timezone: true
+      }
+    })
+
+    return updatedUser
   }
 
   async deleteProfile(userId: string) {
@@ -28,8 +80,28 @@ export class UserService {
   }
 
   async updateSettings(userId: string, data: UpdateSettingsInput) {
-    const user = await this.getProfile(userId)
-    return UserModel.update(userId, { settings: data })
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404)
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        settings: data.settings,
+        preferences: data.preferences
+      },
+      select: {
+        id: true,
+        settings: true,
+        preferences: true
+      }
+    })
+
+    return updatedUser
   }
 
   async getPreferences(userId: string) {
@@ -100,5 +172,21 @@ export class UserService {
     const user = await this.getProfile(userId)
     // Implement activity logging logic here
     return []
+  }
+
+  async deleteAccount(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    })
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404)
+    }
+
+    await prisma.user.delete({
+      where: { id: userId }
+    })
+
+    return { message: "Conta excluída com sucesso" }
   }
 } 

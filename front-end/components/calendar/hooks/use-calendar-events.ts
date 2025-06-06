@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { CalendarEvent } from "@/types/calendar"
-import { calendarApi } from "@/server/calendar"
+import { calendarApi } from "@/services/calendar"
 import { useToast } from "@/hooks/use-toast"
 import { startOfMonth, endOfMonth } from "date-fns"
 
