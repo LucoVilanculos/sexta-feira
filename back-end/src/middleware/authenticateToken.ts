@@ -17,11 +17,11 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
     throw new AppError("Invalid or expired token", 401)
   }
 
-  // Add user info to request
+  // Adiciona informações do usuário à requisição
   ;(req as any).user = {
     userId: payload.userId,
     email: payload.email
   }
 
   next()
-} 
+}
