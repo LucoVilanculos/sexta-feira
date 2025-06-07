@@ -72,40 +72,25 @@
   * {
     @apply border-border;
   }
-  
   body {
     @apply bg-background text-foreground antialiased;
-    background-image: 
+    background-image:
       radial-gradient(circle at top right, hsl(252 100% 68% / 0.15), transparent 40%),
       radial-gradient(circle at bottom left, hsl(252 100% 68% / 0.1), transparent 40%);
     background-attachment: fixed;
   }
-
   ::selection {
     @apply bg-primary/30 text-foreground;
   }
-
   /* Scrollbar Styles */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
-
   ::-webkit-scrollbar-track {
     @apply bg-muted/30;
   }
-
   ::-webkit-scrollbar-thumb {
     @apply bg-primary/50 rounded-full hover:bg-primary/70 transition-colors;
   }
-}
-
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-rgb: 255, 255, 255;
-}
-
-body {
-  color: rgb(var(--foreground));
-  background: rgb(var(--background));
 }
