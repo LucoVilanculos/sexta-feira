@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+
+
 import { useChat } from "../context/chatContext"
 import { MessageBubble } from "./MessageBubble"
 import { staggerChildren, typingIndicator } from "@/constants/animations"

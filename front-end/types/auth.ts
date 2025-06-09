@@ -3,8 +3,13 @@ export interface User {
   name: string
   email: string
   avatar?: string
-  createdAt: Date
-  updatedAt: Date
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface LoginData {
+  email: string
+  password: string
 }
 
 export interface RegisterData {
@@ -13,12 +18,7 @@ export interface RegisterData {
   password: string
 }
 
-export interface LoginData {
-  email: string
-  password: string
-}
-
 export interface AuthResponse {
-  token: string
   user: User
-} 
+  token: string
+}

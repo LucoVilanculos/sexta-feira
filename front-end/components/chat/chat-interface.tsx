@@ -2,13 +2,15 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Send, Brain, Trash2, ArrowDown } from "lucide-react"
+import { useChat } from "../../hooks/useChat"
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+
+import { Button } from "../ui/button"
+import { Input } from "../ui/input"
+import { ScrollArea } from "../ui/scroll-area"
+import { Avatar, AvatarFallback } from "../ui/avatar"
 import { VoiceButton } from "../ui/voicebutton"
-import { useChat } from "@/hooks/useChat"
+
 
 export function ChatInterface() {
   const { messages, isLoading, isFetchingHistory, sendMessage, clearHistory } = useChat()
@@ -81,7 +83,7 @@ export function ChatInterface() {
       {/* Chat Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollAreaRef} onScroll={handleScroll}>
         <div className="space-y-4">
-          {messages.map((message) => (
+          {messages.map((message: any) => (
             <div
               key={message.id}
               className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}

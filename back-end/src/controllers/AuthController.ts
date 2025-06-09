@@ -1,9 +1,9 @@
+import { LoginInput, RegisterInput } from './../schemas/auth.schema';
+import { AuthService } from './../server/AuthService';
+import { AppError } from './../utils/AppError';
 import { Request, Response } from "express"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
-import { AppError } from "@/utils/AppError"
-import { AuthService } from "@/server/AuthService"
-import { LoginInput, RegisterInput } from "@/schemas/auth.schema"
 
 export class AuthController {
   private authService: AuthService

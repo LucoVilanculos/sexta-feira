@@ -4,12 +4,14 @@ import { useState } from "react"
 import { CalendarView as ICalendarView } from "@/types/calendar"
 import { Calendar } from "@/components/ui/calendar"
 import { addMonths, subMonths, isSameDay } from "date-fns"
-import { ptBR } from "date-fns/locale"
+import { ptMZ } from "date-fns/locale"
 import { Loader2 } from "lucide-react"
 import { CreateEventDialog } from "./create-event-dialog"
 import { DayEvents } from "./day-events"
 import { CalendarHeader } from "./calendar-header"
 import { useCalendarEvents } from "./hooks/use-calendar-events"
+
+
 
 export function CalendarView() {
   const [view, setView] = useState<ICalendarView>({

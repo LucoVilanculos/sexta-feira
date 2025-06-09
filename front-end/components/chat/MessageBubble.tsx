@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion"
 import { Bot, User, Sparkles } from "lucide-react"
+
+
 import { cn } from "@/lib/utils"
 import { Message } from "@/types/chat"
 import { messageAnimation } from "@/constants/animations"

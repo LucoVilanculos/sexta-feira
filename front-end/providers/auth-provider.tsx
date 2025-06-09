@@ -2,14 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { fetchApi } from "@/lib/fetch"
-
-interface User {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-}
+import { authApi } from "@/services/auth"
+import { User } from "@/types/auth"
 
 interface AuthContextType {
   user: User | null
@@ -31,8 +25,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   async function checkAuth() {
+    const token = localStorage.getItem("auth_token")
+    if (!token) {
+      setIsLoading(false)
+      return
+    }
+
     try {
-      const user = await fetchApi<User>("/api/auth/me")
+      const { user } = await authApi.getUser()
       setUser(user)
     } catch (error) {
       setUser(null)
@@ -41,35 +41,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function login(email: string, password: string) {
-    try {
-      const user = await fetchApi<User>("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      })
-      setUser(user)
-      router.push("/dashboard")
-    } catch (error) {
-      throw error
-    }
+ async function login(email: string, password: string) {
+  try {
+    const { user } = await authApi.login({ email, password }) // <- objeto compatível com `LoginData`
+    setUser(user)
+    router.push("/dashboard")
+  } catch (error) {
+    throw error
   }
+}
 
-  async function register(name: string, email: string, password: string) {
-    try {
-      const user = await fetchApi<User>("/api/auth/register", {
-        method: "POST",
-        body: JSON.stringify({ name, email, password }),
-      })
-      setUser(user)
-      router.push("/dashboard")
-    } catch (error) {
-      throw error
-    }
+async function register(name: string, email: string, password: string) {
+  try {
+    const { user } = await authApi.register({ name, email, password })
+    setUser(user)
+    router.push("/dashboard")
+  } catch (error) {
+    throw error
   }
+}
 
   async function logout() {
     try {
-      await fetchApi("/api/auth/logout", { method: "POST" })
+      await authApi.logout()
       setUser(null)
       router.push("/auth/login")
     } catch (error) {
@@ -90,4 +84,4 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
-} 
+}

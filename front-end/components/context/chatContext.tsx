@@ -1,11 +1,13 @@
 "use client"
 
 import React, { createContext, useContext, useState, useCallback } from "react"
+import { toast } from "sonner"
+
 import { useVoice } from "./voiceContext"
 import { Message } from "@/types/chat"
 import { sendChatMessage } from "@/services/chat"
 import { processNaturalLanguage } from "@/utils/commandProcessor"
-import { toast } from "sonner"
+import { any } from "zod"
 
 interface ChatContextProps {
   messages: Message[]
@@ -50,15 +52,15 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         return
       } catch (commandError) {
         // Se não for um comando, trata como uma conversa normal
-        const data = await sendChatMessage({ message: content })
+        const data = await sendChatMessage({})
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: data.response,
+          content: data.content,
           timestamp: new Date(),
         }
         setMessages(prev => [...prev, assistantMessage])
-        speak(data.response)
+        speak(data.content)
       }
     } catch (error) {
       console.error("Error processing message:", error)

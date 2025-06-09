@@ -2,12 +2,15 @@
 
 import { useState, useRef, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
+
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Send, Sparkles, Wand2 } from "lucide-react"
 import { VoiceButton } from "@/components/ui/voicebutton"
 import { useChat } from "../context/chatContext"
 import { slideIn, pulseAnimation } from "@/constants/animations"
+
 
 export function ChatInput() {
   const [message, setMessage] = useState("")

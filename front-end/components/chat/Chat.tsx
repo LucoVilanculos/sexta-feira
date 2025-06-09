@@ -1,6 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
+
 import { ChatMessages } from "./ChatMessages"
 import { ChatInput } from "./ChatInput"
 import { fadeIn } from "@/constants/animations"

@@ -78,6 +78,13 @@ export interface AnalysisCommand extends CommandBase {
   suggestions?: boolean
 }
 
+export type CommandResponse = {
+  success: boolean
+  message?: string
+  command?: Command
+  data?: any
+}
+
 export type Command =
   | SystemCommand
   | SocialCommand

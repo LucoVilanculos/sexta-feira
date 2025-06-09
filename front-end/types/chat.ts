@@ -7,6 +7,7 @@ export interface Message {
   timestamp: Date
 }
 
+
 export interface ChatContext {
   lastMessages?: Message[]
   currentTask?: string

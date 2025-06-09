@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { format } from "date-fns"
-import { ptBR } from "date-fns/locale"
+import { ptMZ } from "date-fns/locale"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface CalendarHeaderProps {

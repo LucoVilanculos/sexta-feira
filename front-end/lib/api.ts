@@ -1,4 +1,3 @@
-// Configuração base para chamadas da API
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
 
 class ApiClient {
@@ -19,7 +18,6 @@ class ApiClient {
       ...options,
     }
 
-    // Adicionar token de autenticação se disponível
     const token = localStorage.getItem("auth_token")
     if (token) {
       config.headers = {
@@ -32,7 +30,10 @@ class ApiClient {
       const response = await fetch(url, config)
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorData = await response.json().catch(() => null)
+        throw new Error(
+          `HTTP error! status: ${response.status}, body: ${JSON.stringify(errorData)}`
+        )
       }
 
       return await response.json()
@@ -42,87 +43,15 @@ class ApiClient {
     }
   }
 
-  // Métodos de autenticação
-  async login(email: string, password: string) {
-    return this.request("/auth/login", {
+  async get<T>(endpoint: string): Promise<T> {
+    return this.request<T>(endpoint, { method: "GET" })
+  }
+
+  async post<T>(endpoint: string, body?: any): Promise<T> {
+    return this.request<T>(endpoint, {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify(body),
     })
-  }
-
-  async register(name: string, email: string, password: string) {
-    return this.request("/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ name, email, password }),
-    })
-  }
-
-  async logout() {
-    return this.request("/auth/logout", {
-      method: "POST",
-    })
-  }
-
-  // Métodos para tarefas
-  async getTasks() {
-    return this.request("/tasks")
-  }
-
-  async createTask(task: any) {
-    return this.request("/tasks", {
-      method: "POST",
-      body: JSON.stringify(task),
-    })
-  }
-
-  async updateTask(id: string, task: any) {
-    return this.request(`/tasks/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(task),
-    })
-  }
-
-  async deleteTask(id: string) {
-    return this.request(`/tasks/${id}`, {
-      method: "DELETE",
-    })
-  }
-
-  // Métodos para projetos
-  async getProjects() {
-    return this.request("/projects")
-  }
-
-  async createProject(project: any) {
-    return this.request("/projects", {
-      method: "POST",
-      body: JSON.stringify(project),
-    })
-  }
-
-  async updateProject(id: string, project: any) {
-    return this.request(`/projects/${id}`, {
-      method: "PUT",
-      body: JSON.stringify(project),
-    })
-  }
-
-  async deleteProject(id: string) {
-    return this.request(`/projects/${id}`, {
-      method: "DELETE",
-    })
-  }
-
-  // Métodos para chat/IA
-  async sendMessage(message: string) {
-    return this.request("/chat", {
-      method: "POST",
-      body: JSON.stringify({ message }),
-    })
-  }
-
-  async getConversationHistory() {
-    return this.request("/chat/history")
   }
 }
 
