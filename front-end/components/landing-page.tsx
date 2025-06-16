@@ -13,7 +13,7 @@ export function LandingPage() {
     {
       icon: Brain,
       title: "IA Inteligente",
-      description: "Assistente pessoal que aprende com você",
+      description: "Seu assistente pessoal",
     },
     {
       icon: Calendar,
@@ -22,8 +22,8 @@ export function LandingPage() {
     },
     {
       icon: MessageSquare,
-      title: "Conversação Natural",
-      description: "Fale naturalmente por voz ou texto",
+      title: "Conversa",
+      description: "Por voz ou texto",
     },
     {
       icon: Settings,

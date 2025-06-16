@@ -124,7 +124,7 @@ export function RegisterForm() {
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
-            placeholder="••••••••"
+            placeholder="confirme a palavra-passe"
             {...register("password")}
             className="border-purple-500/20 bg-black/40 text-white pr-10"
           />

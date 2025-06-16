@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../stores/auth.store'
 import { Login } from '../components/Login'
 import { Register } from '../components/Register'
-import { Dashboard } from '../components/Dashboard'
+import { Dashboard } from '@/components/dashboard/dashboard'
 
 interface PrivateRouteProps {
   children: React.ReactNode
@@ -27,9 +27,9 @@ export function AppRoutes() {
         <Route
           path="/"
           element={
-            <PrivateRoute>
+           
               <Dashboard />
-            </PrivateRoute>
+           
           }
         />
         <Route path="*" element={<Navigate to="/" />} />
