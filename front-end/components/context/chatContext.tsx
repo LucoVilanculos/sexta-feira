@@ -7,7 +7,7 @@ import { useVoice } from "./voiceContext"
 import { Message } from "@/types/chat"
 import { sendChatMessage } from "@/services/chat"
 import { processNaturalLanguage } from "@/utils/commandProcessor"
-import { any } from "zod"
+import { any, string } from "zod"
 
 interface ChatContextProps {
   messages: Message[]
@@ -51,8 +51,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         toast.success("Comando executado!")
         return
       } catch (commandError) {
-        // Se não for um comando, trata como uma conversa normal
-        const data = await sendChatMessage({})
+        const data = await sendChatMessage(content)
         const assistantMessage: Message = {
           id: (Date.now() + 1).toString(),
           role: "assistant",

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { CalendarView as ICalendarView } from "@/types/calendar"
 import { Calendar } from "@/components/ui/calendar"
 import { addMonths, subMonths, isSameDay } from "date-fns"
-import { ptMZ } from "date-fns/locale"
+import { ptBR } from "date-fns/locale"
 import { Loader2 } from "lucide-react"
 import { CreateEventDialog } from "./create-event-dialog"
 import { DayEvents } from "./day-events"
@@ -64,11 +64,11 @@ export function CalendarView() {
           <Calendar
             mode="single"
             selected={selectedDate}
-            onSelect={(date) => date && setSelectedDate(date)}
+            onSelect={(date: any) => date && setSelectedDate(date)}
             className="rounded-md border"
             locale={ptBR}
             modifiers={{
-              hasEvent: (date) =>
+              hasEvent: (date: any) =>
                 events.some((event) => isSameDay(new Date(event.start), date)),
             }}
             modifiersClassNames={{

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { Message } from '../types/Message'
 import axios from 'axios'
+import { any } from 'zod'
 
 interface ChatStore {
   messages: Message[]
